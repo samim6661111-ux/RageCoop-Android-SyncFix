@@ -1,0 +1,498 @@
+[
+  {
+    "archive_file": "build.yml",
+    "restore_path": ".github/workflows/build.yml"
+  },
+  {
+    "archive_file": ".gitignore",
+    "restore_path": ".gitignore"
+  },
+  {
+    "archive_file": "APK_BASELINE.txt",
+    "restore_path": "APK_BASELINE.txt"
+  },
+  {
+    "archive_file": "BUILD_STATUS.txt",
+    "restore_path": "BUILD_STATUS.txt"
+  },
+  {
+    "archive_file": "CHECKSUMS_SHA256.txt",
+    "restore_path": "CHECKSUMS_SHA256.txt"
+  },
+  {
+    "archive_file": "COMPILER_REQUIREMENTS.txt",
+    "restore_path": "COMPILER_REQUIREMENTS.txt"
+  },
+  {
+    "archive_file": "GITHUB_BUILD_GUIDE.md",
+    "restore_path": "GITHUB_BUILD_GUIDE.md"
+  },
+  {
+    "archive_file": "GITHUB_REPO_NAME.txt",
+    "restore_path": "GITHUB_REPO_NAME.txt"
+  },
+  {
+    "archive_file": "README_BANGLA.txt",
+    "restore_path": "README_BANGLA.txt"
+  },
+  {
+    "archive_file": "SOURCE_PATCH.diff",
+    "restore_path": "SOURCE_PATCH.diff"
+  },
+  {
+    "archive_file": "RageCoop.Client.dll",
+    "restore_path": "backup/original_from_apk/RageCoop.Client.dll"
+  },
+  {
+    "archive_file": "backup__original_from_apk__RageCoop.Core.dll",
+    "restore_path": "backup/original_from_apk/RageCoop.Core.dll"
+  },
+  {
+    "archive_file": "build_linux_mono.sh",
+    "restore_path": "build_linux_mono.sh"
+  },
+  {
+    "archive_file": "LemonUI.SHVDN3.dll",
+    "restore_path": "build_refs/LemonUI.SHVDN3.dll"
+  },
+  {
+    "archive_file": "Lidgren.Network.dll",
+    "restore_path": "build_refs/Lidgren.Network.dll"
+  },
+  {
+    "archive_file": "Newtonsoft.Json.dll",
+    "restore_path": "build_refs/Newtonsoft.Json.dll"
+  },
+  {
+    "archive_file": "build_refs__RageCoop.Core.dll",
+    "restore_path": "build_refs/RageCoop.Core.dll"
+  },
+  {
+    "archive_file": "ScriptHookVDotNet.dll",
+    "restore_path": "build_refs/ScriptHookVDotNet.dll"
+  },
+  {
+    "archive_file": "ScriptHookVDotNet3.dll",
+    "restore_path": "build_refs/ScriptHookVDotNet3.dll"
+  },
+  {
+    "archive_file": "System.ComponentModel.Composition.dll",
+    "restore_path": "build_refs/System.ComponentModel.Composition.dll"
+  },
+  {
+    "archive_file": "System.Configuration.dll",
+    "restore_path": "build_refs/System.Configuration.dll"
+  },
+  {
+    "archive_file": "System.Core.dll",
+    "restore_path": "build_refs/System.Core.dll"
+  },
+  {
+    "archive_file": "System.Data.dll",
+    "restore_path": "build_refs/System.Data.dll"
+  },
+  {
+    "archive_file": "System.Drawing.dll",
+    "restore_path": "build_refs/System.Drawing.dll"
+  },
+  {
+    "archive_file": "System.IO.Compression.FileSystem.dll",
+    "restore_path": "build_refs/System.IO.Compression.FileSystem.dll"
+  },
+  {
+    "archive_file": "System.IO.Compression.dll",
+    "restore_path": "build_refs/System.IO.Compression.dll"
+  },
+  {
+    "archive_file": "System.Net.Http.dll",
+    "restore_path": "build_refs/System.Net.Http.dll"
+  },
+  {
+    "archive_file": "System.Numerics.dll",
+    "restore_path": "build_refs/System.Numerics.dll"
+  },
+  {
+    "archive_file": "System.Runtime.Serialization.Formatters.Soap.dll",
+    "restore_path": "build_refs/System.Runtime.Serialization.Formatters.Soap.dll"
+  },
+  {
+    "archive_file": "System.Runtime.Serialization.dll",
+    "restore_path": "build_refs/System.Runtime.Serialization.dll"
+  },
+  {
+    "archive_file": "System.Runtime.dll",
+    "restore_path": "build_refs/System.Runtime.dll"
+  },
+  {
+    "archive_file": "System.Transactions.dll",
+    "restore_path": "build_refs/System.Transactions.dll"
+  },
+  {
+    "archive_file": "System.Windows.Forms.dll",
+    "restore_path": "build_refs/System.Windows.Forms.dll"
+  },
+  {
+    "archive_file": "System.Xml.Linq.dll",
+    "restore_path": "build_refs/System.Xml.Linq.dll"
+  },
+  {
+    "archive_file": "System.Xml.dll",
+    "restore_path": "build_refs/System.Xml.dll"
+  },
+  {
+    "archive_file": "System.dll",
+    "restore_path": "build_refs/System.dll"
+  },
+  {
+    "archive_file": "mscorlib.dll",
+    "restore_path": "build_refs/mscorlib.dll"
+  },
+  {
+    "archive_file": "netstandard.dll",
+    "restore_path": "build_refs/netstandard.dll"
+  },
+  {
+    "archive_file": "build_windows.cmd",
+    "restore_path": "build_windows.cmd"
+  },
+  {
+    "archive_file": "build_windows.ps1",
+    "restore_path": "build_windows.ps1"
+  },
+  {
+    "archive_file": "AndroidPaths.cs",
+    "restore_path": "source/RageCoop.Client/Android/AndroidPaths.cs"
+  },
+  {
+    "archive_file": "ZipShim.cs",
+    "restore_path": "source/RageCoop.Client/Android/ZipShim.cs"
+  },
+  {
+    "archive_file": "Debug.cs",
+    "restore_path": "source/RageCoop.Client/Debug.cs"
+  },
+  {
+    "archive_file": "DevTool.cs",
+    "restore_path": "source/RageCoop.Client/DevTools/DevTool.cs"
+  },
+  {
+    "archive_file": "source__RageCoop.Client__FodyWeavers.xml",
+    "restore_path": "source/RageCoop.Client/FodyWeavers.xml"
+  },
+  {
+    "archive_file": "source__RageCoop.Client__FodyWeavers.xsd",
+    "restore_path": "source/RageCoop.Client/FodyWeavers.xsd"
+  },
+  {
+    "archive_file": "Main.cs",
+    "restore_path": "source/RageCoop.Client/Main.cs"
+  },
+  {
+    "archive_file": "CoopMenu.cs",
+    "restore_path": "source/RageCoop.Client/Menus/CoopMenu.cs"
+  },
+  {
+    "archive_file": "DebugMenu.cs",
+    "restore_path": "source/RageCoop.Client/Menus/Sub/DebugMenu.cs"
+  },
+  {
+    "archive_file": "DevToolMenu.cs",
+    "restore_path": "source/RageCoop.Client/Menus/Sub/DevToolMenu.cs"
+  },
+  {
+    "archive_file": "ServersMenu.cs",
+    "restore_path": "source/RageCoop.Client/Menus/Sub/ServersMenu.cs"
+  },
+  {
+    "archive_file": "SettingsMenu.cs",
+    "restore_path": "source/RageCoop.Client/Menus/Sub/SettingsMenu.cs"
+  },
+  {
+    "archive_file": "Chat.cs",
+    "restore_path": "source/RageCoop.Client/Networking/Chat.cs"
+  },
+  {
+    "archive_file": "DownloadManager.cs",
+    "restore_path": "source/RageCoop.Client/Networking/DownloadManager.cs"
+  },
+  {
+    "archive_file": "source__RageCoop.Client__Networking__HolePunch.cs",
+    "restore_path": "source/RageCoop.Client/Networking/HolePunch.cs"
+  },
+  {
+    "archive_file": "Networking.cs",
+    "restore_path": "source/RageCoop.Client/Networking/Networking.cs"
+  },
+  {
+    "archive_file": "Receive.cs",
+    "restore_path": "source/RageCoop.Client/Networking/Receive.cs"
+  },
+  {
+    "archive_file": "Send.cs",
+    "restore_path": "source/RageCoop.Client/Networking/Send.cs"
+  },
+  {
+    "archive_file": "Statistics.cs",
+    "restore_path": "source/RageCoop.Client/Networking/Statistics.cs"
+  },
+  {
+    "archive_file": "PlayerList.cs",
+    "restore_path": "source/RageCoop.Client/PlayerList.cs"
+  },
+  {
+    "archive_file": "AssemblyInfo.cs",
+    "restore_path": "source/RageCoop.Client/Properties/AssemblyInfo.cs"
+  },
+  {
+    "archive_file": "AssemblyInfo.tt",
+    "restore_path": "source/RageCoop.Client/Properties/AssemblyInfo.tt"
+  },
+  {
+    "archive_file": "RageCoop.Client.csproj",
+    "restore_path": "source/RageCoop.Client/RageCoop.Client.csproj"
+  },
+  {
+    "archive_file": "API.cs",
+    "restore_path": "source/RageCoop.Client/Scripting/API.cs"
+  },
+  {
+    "archive_file": "BaseScript.cs",
+    "restore_path": "source/RageCoop.Client/Scripting/BaseScript.cs"
+  },
+  {
+    "archive_file": "ClientScript.cs",
+    "restore_path": "source/RageCoop.Client/Scripting/ClientScript.cs"
+  },
+  {
+    "archive_file": "Resources.cs",
+    "restore_path": "source/RageCoop.Client/Scripting/Resources.cs"
+  },
+  {
+    "archive_file": "Security.cs",
+    "restore_path": "source/RageCoop.Client/Security.cs"
+  },
+  {
+    "archive_file": "Settings.cs",
+    "restore_path": "source/RageCoop.Client/Settings.cs"
+  },
+  {
+    "archive_file": "SyncedPed.Animations.cs",
+    "restore_path": "source/RageCoop.Client/Sync/Entities/Ped/SyncedPed.Animations.cs"
+  },
+  {
+    "archive_file": "SyncedPed.Members.cs",
+    "restore_path": "source/RageCoop.Client/Sync/Entities/Ped/SyncedPed.Members.cs"
+  },
+  {
+    "archive_file": "SyncedPed.cs",
+    "restore_path": "source/RageCoop.Client/Sync/Entities/Ped/SyncedPed.cs"
+  },
+  {
+    "archive_file": "SyncedEntity.cs",
+    "restore_path": "source/RageCoop.Client/Sync/Entities/SyncedEntity.cs"
+  },
+  {
+    "archive_file": "SyncedProjectile.cs",
+    "restore_path": "source/RageCoop.Client/Sync/Entities/SyncedProjectile.cs"
+  },
+  {
+    "archive_file": "SyncedProp.cs",
+    "restore_path": "source/RageCoop.Client/Sync/Entities/SyncedProp.cs"
+  },
+  {
+    "archive_file": "SyncedVehicle.Members.cs",
+    "restore_path": "source/RageCoop.Client/Sync/Entities/Vehicle/SyncedVehicle.Members.cs"
+  },
+  {
+    "archive_file": "SyncedVehicle.cs",
+    "restore_path": "source/RageCoop.Client/Sync/Entities/Vehicle/SyncedVehicle.cs"
+  },
+  {
+    "archive_file": "EntityPool.cs",
+    "restore_path": "source/RageCoop.Client/Sync/EntityPool.cs"
+  },
+  {
+    "archive_file": "SyncEvents.cs",
+    "restore_path": "source/RageCoop.Client/Sync/SyncEvents.cs"
+  },
+  {
+    "archive_file": "source__RageCoop.Client__Sync__Voice.cs",
+    "restore_path": "source/RageCoop.Client/Sync/Voice.cs"
+  },
+  {
+    "archive_file": "AddOnDataProvider.cs",
+    "restore_path": "source/RageCoop.Client/Util/AddOnDataProvider.cs"
+  },
+  {
+    "archive_file": "Memory.cs",
+    "restore_path": "source/RageCoop.Client/Util/Memory.cs"
+  },
+  {
+    "archive_file": "NativeCaller.cs",
+    "restore_path": "source/RageCoop.Client/Util/NativeCaller.cs"
+  },
+  {
+    "archive_file": "PedConfigFlags.cs",
+    "restore_path": "source/RageCoop.Client/Util/PedConfigFlags.cs"
+  },
+  {
+    "archive_file": "PedExtensions.cs",
+    "restore_path": "source/RageCoop.Client/Util/PedExtensions.cs"
+  },
+  {
+    "archive_file": "TaskType.cs",
+    "restore_path": "source/RageCoop.Client/Util/TaskType.cs"
+  },
+  {
+    "archive_file": "Util.cs",
+    "restore_path": "source/RageCoop.Client/Util/Util.cs"
+  },
+  {
+    "archive_file": "VehicleExtensions.cs",
+    "restore_path": "source/RageCoop.Client/Util/VehicleExtensions.cs"
+  },
+  {
+    "archive_file": "WeaponUtil.cs",
+    "restore_path": "source/RageCoop.Client/Util/WeaponUtil.cs"
+  },
+  {
+    "archive_file": "WorldThread.cs",
+    "restore_path": "source/RageCoop.Client/WorldThread.cs"
+  },
+  {
+    "archive_file": "packages.config",
+    "restore_path": "source/RageCoop.Client/packages.config"
+  },
+  {
+    "archive_file": "BitReader.cs",
+    "restore_path": "source/RageCoop.Core/BitReader.cs"
+  },
+  {
+    "archive_file": "CoreUtils.cs",
+    "restore_path": "source/RageCoop.Core/CoreUtils.cs"
+  },
+  {
+    "archive_file": "source__RageCoop.Core__FodyWeavers.xml",
+    "restore_path": "source/RageCoop.Core/FodyWeavers.xml"
+  },
+  {
+    "archive_file": "source__RageCoop.Core__FodyWeavers.xsd",
+    "restore_path": "source/RageCoop.Core/FodyWeavers.xsd"
+  },
+  {
+    "archive_file": "Logger.cs",
+    "restore_path": "source/RageCoop.Core/Logger.cs"
+  },
+  {
+    "archive_file": "MathExtensions.cs",
+    "restore_path": "source/RageCoop.Core/MathExtensions.cs"
+  },
+  {
+    "archive_file": "CoopPeer.cs",
+    "restore_path": "source/RageCoop.Core/Networking/CoopPeer.cs"
+  },
+  {
+    "archive_file": "HttpHelper.cs",
+    "restore_path": "source/RageCoop.Core/Networking/HttpHelper.cs"
+  },
+  {
+    "archive_file": "PublicKey.cs",
+    "restore_path": "source/RageCoop.Core/Networking/PublicKey.cs"
+  },
+  {
+    "archive_file": "ServerInfo.cs",
+    "restore_path": "source/RageCoop.Core/Networking/ServerInfo.cs"
+  },
+  {
+    "archive_file": "ZeroTierHelper.cs",
+    "restore_path": "source/RageCoop.Core/Networking/ZeroTierHelper.cs"
+  },
+  {
+    "archive_file": "PacketExtensions.cs",
+    "restore_path": "source/RageCoop.Core/PacketExtensions.cs"
+  },
+  {
+    "archive_file": "ChatMessage.cs",
+    "restore_path": "source/RageCoop.Core/Packets/ChatMessage.cs"
+  },
+  {
+    "archive_file": "CustomEvent.cs",
+    "restore_path": "source/RageCoop.Core/Packets/CustomEvent.cs"
+  },
+  {
+    "archive_file": "FilePackets.cs",
+    "restore_path": "source/RageCoop.Core/Packets/FilePackets.cs"
+  },
+  {
+    "archive_file": "source__RageCoop.Core__Packets__HolePunch.cs",
+    "restore_path": "source/RageCoop.Core/Packets/HolePunch.cs"
+  },
+  {
+    "archive_file": "Misc.cs",
+    "restore_path": "source/RageCoop.Core/Packets/Misc.cs"
+  },
+  {
+    "archive_file": "Packets.cs",
+    "restore_path": "source/RageCoop.Core/Packets/Packets.cs"
+  },
+  {
+    "archive_file": "PedSync.cs",
+    "restore_path": "source/RageCoop.Core/Packets/PedSync.cs"
+  },
+  {
+    "archive_file": "PlayerPackets.cs",
+    "restore_path": "source/RageCoop.Core/Packets/PlayerPackets.cs"
+  },
+  {
+    "archive_file": "ProjectileSync.cs",
+    "restore_path": "source/RageCoop.Core/Packets/ProjectileSync.cs"
+  },
+  {
+    "archive_file": "BulletShot.cs",
+    "restore_path": "source/RageCoop.Core/Packets/SyncEvents/BulletShot.cs"
+  },
+  {
+    "archive_file": "NozzleTransform.cs",
+    "restore_path": "source/RageCoop.Core/Packets/SyncEvents/NozzleTransform.cs"
+  },
+  {
+    "archive_file": "OwnerChanged.cs",
+    "restore_path": "source/RageCoop.Core/Packets/SyncEvents/OwnerChanged.cs"
+  },
+  {
+    "archive_file": "PedKilled.cs",
+    "restore_path": "source/RageCoop.Core/Packets/SyncEvents/PedKilled.cs"
+  },
+  {
+    "archive_file": "VehicleBulletShot.cs",
+    "restore_path": "source/RageCoop.Core/Packets/SyncEvents/VehicleBulletShot.cs"
+  },
+  {
+    "archive_file": "VehicleSync.cs",
+    "restore_path": "source/RageCoop.Core/Packets/VehicleSync.cs"
+  },
+  {
+    "archive_file": "source__RageCoop.Core__Packets__Voice.cs",
+    "restore_path": "source/RageCoop.Core/Packets/Voice.cs"
+  },
+  {
+    "archive_file": "RageCoop.Core.csproj",
+    "restore_path": "source/RageCoop.Core/RageCoop.Core.csproj"
+  },
+  {
+    "archive_file": "CustomEvents.cs",
+    "restore_path": "source/RageCoop.Core/Scripting/CustomEvents.cs"
+  },
+  {
+    "archive_file": "ResourceFile.cs",
+    "restore_path": "source/RageCoop.Core/Scripting/ResourceFile.cs"
+  },
+  {
+    "archive_file": "Worker.cs",
+    "restore_path": "source/RageCoop.Core/Worker.cs"
+  },
+  {
+    "archive_file": "test_sync_fix_sources.py",
+    "restore_path": "tests/test_sync_fix_sources.py"
+  }
+]

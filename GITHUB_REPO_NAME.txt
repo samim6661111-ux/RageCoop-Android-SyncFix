@@ -1,0 +1,2 @@
+Recommended GitHub repository name: RageCoop-Android-SyncFix
+Recommended visibility: PRIVATE (contains source and binary reference files).
