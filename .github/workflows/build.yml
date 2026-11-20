@@ -31,71 +31,48 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          $mapPath = Join-Path $PWD 'FLAT_FILE_MAP.json'
-          if (-not (Test-Path -LiteralPath $mapPath)) { throw 'FLAT_FILE_MAP.json is missing.' }
-          $map = Get-Content -LiteralPath $mapPath -Raw | ConvertFrom-Json
+          $map = Get-Content FLAT_FILE_MAP.json -Raw | ConvertFrom-Json
           foreach ($item in $map) {
             if ($item.restore_path -eq '.github/workflows/build.yml') { continue }
             $src = Join-Path $PWD $item.archive_file
-            if (-not (Test-Path -LiteralPath $src)) { throw "Missing flat file: $($item.archive_file)" }
             $dest = Join-Path $PWD $item.restore_path
-            $srcFull = [System.IO.Path]::GetFullPath($src)
-            $destFull = [System.IO.Path]::GetFullPath($dest)
-            if ([string]::Equals($srcFull, $destFull, [System.StringComparison]::OrdinalIgnoreCase)) { continue }
+            if (-not (Test-Path -LiteralPath $src)) { throw "Missing flat file: $src" }
+            if ([IO.Path]::GetFullPath($src) -eq [IO.Path]::GetFullPath($dest)) { continue }
             $parent = Split-Path -Parent $dest
             if ($parent) { New-Item -ItemType Directory -Force -Path $parent | Out-Null }
-            Copy-Item -LiteralPath $srcFull -Destination $destFull -Force
+            Copy-Item -LiteralPath $src -Destination $dest -Force
           }
           if (-not (Test-Path 'tests/test_sync_fix_sources.py')) { throw 'Source test missing.' }
           if (-not (Test-Path 'build_windows.ps1')) { throw 'Build script missing.' }
-          if (-not (Test-Path 'source/RageCoop.Client/Main.cs')) { throw 'Main.cs missing.' }
 
       - name: Verify original Lidgren reference
         shell: pwsh
         run: |
-          $ErrorActionPreference = 'Stop'
-          $lidgren = Join-Path $PWD 'build_refs/Lidgren.Network.dll'
-          if (-not (Test-Path $lidgren)) { throw 'build_refs/Lidgren.Network.dll missing.' }
-          $actual = (Get-FileHash $lidgren -Algorithm SHA256).Hash.ToLowerInvariant()
+          $actual = (Get-FileHash build_refs/Lidgren.Network.dll -Algorithm SHA256).Hash.ToLowerInvariant()
           $expected = '0cf348189180207818848fe669b60b03d9176596fa5b4bb02533ffcb04e599c3'
           if ($actual -ne $expected) { throw 'Wrong Lidgren reference DLL.' }
 
-      - name: Locate and verify old Android menu source DLL
+      - name: Locate old Android menu DLL
         shell: pwsh
         run: |
-          $ErrorActionPreference = 'Stop'
           $expected = '3d519502c4a15f22e4d465b2a054dd545b2dcee2c96ca4437d627bca5533caeb'
-          $candidateNames = @('RageCoop.Client.AndroidMenuSource.dll','RageCoop.Client.dll5','RageCoop.Client (1).dll')
-          $matches = @()
-          foreach ($name in $candidateNames) {
-            $matches += Get-ChildItem -LiteralPath $PWD -Filter $name -File -Recurse -ErrorAction SilentlyContinue
-          }
-          $oldDll = $null
-          foreach ($candidate in $matches) {
-            $actual = (Get-FileHash $candidate.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
-            if ($actual -eq $expected) { $oldDll = $candidate.FullName; break }
-          }
-          if (-not $oldDll) {
-            Write-Host 'DLL files found in repository:'
-            Get-ChildItem -LiteralPath $PWD -Filter '*.dll' -File -Recurse | ForEach-Object { Write-Host $_.FullName }
-            throw 'Upload the old 207,872-byte menu DLL to repository root. Accepted names: RageCoop.Client.AndroidMenuSource.dll, RageCoop.Client.dll5, RageCoop.Client (1).dll'
-          }
+          $found = Get-ChildItem -Path $PWD -Filter '*.dll' -File -Recurse |
+            Where-Object { (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant() -eq $expected } |
+            Select-Object -First 1
+          if (-not $found) { throw 'Old Android menu DLL not found.' }
           $dest = Join-Path $env:RUNNER_TEMP 'RageCoop.Client.AndroidMenuSource.dll'
-          Copy-Item -LiteralPath $oldDll -Destination $dest -Force
-          'RAGECOOP_MENU_SOURCE=' + $dest | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
-          Write-Host "Verified menu source DLL: $oldDll"
+          Copy-Item $found.FullName $dest -Force
+          "RAGECOOP_MENU_SOURCE=$dest" | Out-File $env:GITHUB_ENV -Append -Encoding utf8
 
       - name: Recover Android menu navigation source
         shell: pwsh
         run: |
-          $ErrorActionPreference = 'Stop'
-          $toolDir = Join-Path $env:RUNNER_TEMP 'ragecoop-nav-decompiler'
-          $inputDir = Join-Path $env:RUNNER_TEMP 'ragecoop-nav-input'
-          New-Item -ItemType Directory -Force -Path $inputDir | Out-Null
-          Copy-Item -LiteralPath $env:RAGECOOP_MENU_SOURCE -Destination (Join-Path $inputDir 'RageCoop.Client.AndroidMenuSource.dll') -Force
-          Copy-Item -Path (Join-Path $PWD 'build_refs/*.dll') -Destination $inputDir -Force
-          dotnet new console --framework net8.0 --output $toolDir --force
-          dotnet add (Join-Path $toolDir 'ragecoop-nav-decompiler.csproj') package ICSharpCode.Decompiler --version 11.2.0.10050
+          $tool = Join-Path $env:RUNNER_TEMP 'nav-decompiler'
+          $inputDir = Join-Path $env:RUNNER_TEMP 'nav-input'
+          New-Item -ItemType Directory -Force $inputDir | Out-Null
+          Copy-Item $env:RAGECOOP_MENU_SOURCE $inputDir
+          dotnet new console --framework net8.0 --output $tool --force
+          dotnet add "$tool/nav-decompiler.csproj" package ICSharpCode.Decompiler --version 11.2.0.10050
           $program = @'
           using System;
           using System.IO;
@@ -104,44 +81,64 @@ jobs:
           using ICSharpCode.Decompiler.CSharp;
           using ICSharpCode.Decompiler.TypeSystem;
           if (args.Length != 2) return 2;
-          var settings = new DecompilerSettings { ThrowOnAssemblyResolveErrors = false };
-          var decompiler = new CSharpDecompiler(args[0], settings);
+          var d = new CSharpDecompiler(args[0], new DecompilerSettings { ThrowOnAssemblyResolveErrors = false });
           Directory.CreateDirectory(args[1]);
-          foreach (string typeName in new[] { "RageCoop.Client.Menus.AndroidMenuNav", "RageCoop.Client.Menus.AndroidLog" }) {
-            string source = decompiler.DecompileTypeAsString(new FullTypeName(typeName));
-            string file = typeName.Substring(typeName.LastIndexOf('.') + 1) + ".Imported.cs";
-            File.WriteAllText(Path.Combine(args[1], file), source, new UTF8Encoding(false));
+          foreach (var t in new[] { "RageCoop.Client.Menus.AndroidMenuNav", "RageCoop.Client.Menus.AndroidLog" }) {
+            var s = d.DecompileTypeAsString(new FullTypeName(t));
+            File.WriteAllText(Path.Combine(args[1], t.Substring(t.LastIndexOf('.') + 1) + ".Imported.cs"), s, new UTF8Encoding(false));
           }
           return 0;
           '@
-          Set-Content -LiteralPath (Join-Path $toolDir 'Program.cs') -Value $program -Encoding utf8
-          $decompiledDir = Join-Path $PWD 'source/RageCoop.Client/Menus'
-          dotnet run --project (Join-Path $toolDir 'ragecoop-nav-decompiler.csproj') --configuration Release -- (Join-Path $inputDir 'RageCoop.Client.AndroidMenuSource.dll') $decompiledDir
-          foreach ($file in @('AndroidMenuNav.Imported.cs','AndroidLog.Imported.cs')) {
-            if (-not (Test-Path (Join-Path $decompiledDir $file))) { throw "Navigation source missing: $file" }
-          }
+          Set-Content "$tool/Program.cs" $program -Encoding utf8
+          $menuDir = Join-Path $PWD 'source/RageCoop.Client/Menus'
+          dotnet run --project "$tool/nav-decompiler.csproj" --configuration Release -- "$env:RAGECOOP_MENU_SOURCE" "$menuDir"
+          if (-not (Test-Path "$menuDir/AndroidMenuNav.Imported.cs")) { throw 'AndroidMenuNav source missing.' }
+          if (-not (Test-Path "$menuDir/AndroidLog.Imported.cs")) { throw 'AndroidLog source missing.' }
 
-      - name: Restore Android menu tick hook
+      - name: Restore menu tick hook
         shell: pwsh
         run: |
-          $ErrorActionPreference = 'Stop'
-          $mainPath = Join-Path $PWD 'source/RageCoop.Client/Main.cs'
-          $mainText = Get-Content $mainPath -Raw
-          if ($mainText -notmatch 'AndroidMenuNav\.Tick\(\)') {
+          $p = 'source/RageCoop.Client/Main.cs'
+          $s = Get-Content $p -Raw
+          if ($s -notmatch 'AndroidMenuNav\.Tick\(\)') {
             $needle = '            CoopMenu.MenuPool.Process();'
-            if (-not $mainText.Contains($needle)) { throw 'Could not find menu pool processing line.' }
-            $mainText = $mainText.Replace($needle, $needle + [Environment]::NewLine + '            AndroidMenuNav.Tick();')
-            Set-Content -LiteralPath $mainPath -Value $mainText -Encoding utf8
+            if (-not $s.Contains($needle)) { throw 'Menu pool hook not found.' }
+            $s = $s.Replace($needle, $needle + [Environment]::NewLine + '            AndroidMenuNav.Tick();')
+            Set-Content $p $s -Encoding utf8
           }
 
       - name: Validate source patches
         run: python tests/test_sync_fix_sources.py
 
-      - name: Compile RageCoop.Client.dll
+      - name: Fix Roslyn output argument
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $p = 'build_windows.ps1'
+          $s = Get-Content $p -Raw
+          $pattern = '(?s)foreach \(\$arg in @\(''/nologo''.*?\)\) \{\s*\$compilerArgs\.Add\(\$arg\)\s*\}'
+          $replacement = @'
+          $compilerArgs.Add('/nologo')
+          $compilerArgs.Add('/noconfig')
+          $compilerArgs.Add('/target:library')
+          $compilerArgs.Add('/unsafe+')
+          $compilerArgs.Add('/optimize+')
+          $compilerArgs.Add('/langversion:latest')
+          $compilerArgs.Add('/nostdlib+')
+          $compilerArgs.Add('/platform:anycpu')
+          if ([string]::IsNullOrWhiteSpace($clientOut)) { throw 'clientOut is empty.' }
+          $compilerArgs.Add(('/out:{0}' -f $clientOut))
+          '@
+          $s2 = [regex]::Replace($s, $pattern, [System.Text.RegularExpressions.MatchEvaluator]{ param($m) $replacement }, 1)
+          if ($s2 -ceq $s) { throw 'Could not patch compiler argument block.' }
+          Set-Content $p $s2 -Encoding utf8
+          if ((Get-Content $p -Raw) -notmatch "compilerArgs\.Add\(\('/out:\{0\}' -f \$clientOut\)\)") { throw 'Output argument patch verification failed.' }
+
+      - name: Compile Client DLL
         shell: pwsh
         run: ./build_windows.ps1
 
-      - name: Upload build output
+      - name: Upload compiled Client DLL
         uses: actions/upload-artifact@v7
         with:
           name: RageCoop-Android-SyncFix
