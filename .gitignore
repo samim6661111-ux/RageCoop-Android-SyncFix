@@ -1,0 +1,4 @@
+# Generated build output and logs
+/build_logs/
+/install/games/gtav/scripts/RageCoop/RageCoop.Client.dll
+/RageCoop-Android-SyncFix-ClientDLL.zip

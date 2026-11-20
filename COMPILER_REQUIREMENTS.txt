@@ -1,0 +1,13 @@
+Windows build prerequisites
+===========================
+- Windows PowerShell 5.1 or PowerShell 7
+- .NET 8 SDK (recommended) OR Visual Studio 2022 Build Tools with Roslyn C# compiler
+- No GTA V or Android SDK is needed to compile the managed RageCoop.Client.dll
+- Internet is not required for this direct-reference build; compile references are included in build_refs/
+
+Run build_windows.cmd from the extracted folder.
+On success, install/games/gtav/scripts/RageCoop/RageCoop.Client.dll is created.
+The script does not replace or build RageCoop.Core.dll, the APK, or native bridge.
+
+This build script has not been executed in the current environment. Compilation may
+still reveal version-specific API errors; preserve the complete build log if so.

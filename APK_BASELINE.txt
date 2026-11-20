@@ -1,0 +1,31 @@
+CURRENT ANDROID APK BASELINE (DO NOT REPLACE THESE WITH PC BUILDS)
+
+APK SHA256:
+1b59e5fd2d39e2179ce6f03f0a1010b53fc544520602f02cb9c769f3e226e66a
+
+Relevant entries extracted/inspected from the user's current APK:
+assets/foxbundle/scripts/RageCoop/RageCoop.Client.dll
+  size: 207872
+  SHA256: 7c99f618eee4ee5bce8eab91d29d16ff32f8f3e5bdaa7a4b89f246b93eb4569c
+
+assets/foxbundle/scripts/RageCoop/RageCoop.Core.dll
+  size: 61440
+  SHA256: 800e0e06ba3f1553e09133cecf2c2252b7c8637ea255ce142276f6cfa5e76873
+
+assets/foxbundle/mono/GtavHost.dll
+  size: 35328
+  SHA256: 24e1cf3595ccca8afaaf96bdc3ba5b1fa69def60bf7b6c94eff84c74e214a8d7
+
+assets/foxbundle/plugins/libmonohost.so
+  size: 7840
+  SHA256: 34f79faa5a34197d9c5eda38ee7b6b8b150c183de7efb76c4b91ccc435734383
+
+lib/arm64-v8a/libgtavbridge.so
+  size: 34824
+  SHA256: 6095a7c331e9be7852a0e98bd671e94f20c93409f1aa3ed1f7a62c1c7755e079
+
+Current APK's native bridge is Stage 2.6. The Stage 2.3 native source in the
+separate managed-source ZIP is not a replacement for this APK bridge.
+
+The APK's Client DLL matches the loose RageCoop.Client (1).dll previously supplied;
+it is the baseline build, not the new source patch.

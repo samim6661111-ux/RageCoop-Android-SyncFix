@@ -1,0 +1,17 @@
+STATUS: CLIENT SOURCE PATCHED; LOCAL DLL BUILD NOT PERFORMED.
+GITHUB ACTIONS WORKFLOW ADDED; REMOTE BUILD HAS NOT BEEN RUN.
+
+Workflow: .github/workflows/build.yml
+Recommended repository: RageCoop-Android-SyncFix (PRIVATE)
+
+The workflow:
+- runs source validation tests,
+- uses a Windows GitHub-hosted runner and .NET 8 Roslyn,
+- attempts to compile only RageCoop.Client.dll,
+- packages a flat DLL ZIP and uploads the compiler log.
+
+No compiled DLL is included in this source package. The actual GitHub Actions run
+must complete successfully before a compiled DLL artifact exists.
+
+Source checks passing is not a C# compile or Android runtime test. Two-client
+multiplayer validation is still required.
