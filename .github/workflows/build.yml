@@ -164,30 +164,26 @@ jobs:
           $ErrorActionPreference = 'Stop'
           $scriptPath = Join-Path $PWD 'build_windows.ps1'
           $scriptText = Get-Content -LiteralPath $scriptPath -Raw
-          $old = "foreach (`$arg in @('/nologo','/noconfig','/target:library','/unsafe+','/optimize+','/langversion:latest','/nostdlib+','/platform:anycpu','/out:' + `$clientOut)) {`r`n    `$compilerArgs.Add(`$arg)`r`n}"
-          if (-not $scriptText.Contains($old)) {
-            $pattern = "(?s)foreach \(`$arg in @\('/nologo'.*?\)\) \{\s*`$compilerArgs\.Add\(`$arg\)\s*\}"
-            if ($scriptText -notmatch $pattern) { throw 'Could not find original compiler argument block.' }
-            $replacement = @'
-          $compilerArgs.Add('/nologo')
-          $compilerArgs.Add('/noconfig')
-          $compilerArgs.Add('/target:library')
-          $compilerArgs.Add('/unsafe+')
-          $compilerArgs.Add('/optimize+')
-          $compilerArgs.Add('/langversion:latest')
-          $compilerArgs.Add('/nostdlib+')
-          $compilerArgs.Add('/platform:anycpu')
-          if ([string]::IsNullOrWhiteSpace($clientOut)) { throw 'clientOut is empty before compiler argument creation.' }
-          $compilerArgs.Add(('/out:{0}' -f $clientOut))
-          '@
-            $scriptText = [regex]::Replace($scriptText, $pattern, [System.Text.RegularExpressions.MatchEvaluator]{ param($m) $replacement }, 1)
-          } else {
-            $scriptText = $scriptText.Replace("'/out:' + `$clientOut", "('/out:{0}' -f `$clientOut)")
+
+          # Change only the broken /out argument expression; keep the existing compiler arguments.
+          $oldOutputArg = "'/out:' + `$clientOut"
+          $newOutputArg = "('/out:{0}' -f `$clientOut)"
+          if (-not $scriptText.Contains($oldOutputArg)) {
+            throw 'Could not find the original /out argument expression in build_windows.ps1.'
           }
+
+          $scriptText = $scriptText.Replace($oldOutputArg, $newOutputArg)
           Set-Content -LiteralPath $scriptPath -Value $scriptText -Encoding utf8
+
           $check = Get-Content -LiteralPath $scriptPath -Raw
-          if (-not $check.Contains('$compilerArgs.Add((''/out:{0}'' -f $clientOut))')) { throw 'Output argument patch did not apply.' }
-          Write-Host 'Verified build script now constructs /out:<full DLL path>.'
+          if (-not $check.Contains("('/out:{0}' -f `$clientOut)")) {
+            throw 'The /out argument replacement was not saved.'
+          }
+          if ($check.Contains($oldOutputArg)) {
+            throw 'The original broken /out argument expression is still present.'
+          }
+
+          Write-Host 'Verified /out argument replacement.'
 
       - name: Compile RageCoop.Client.dll
         shell: pwsh
