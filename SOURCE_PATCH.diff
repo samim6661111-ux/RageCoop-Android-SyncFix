@@ -1,0 +1,259 @@
+--- a/RageCoop.Client/Android/AndroidPaths.cs
++++ b/RageCoop.Client/Android/AndroidPaths.cs
+@@ -1,4 +1,5 @@
+ using System;
++using System.IO;
+ 
+ namespace RageCoop.Client
+ {
+@@ -20,5 +21,36 @@
+                 path = "scripts/" + path.Substring(8);
+             return GameRoot + "/" + path.TrimStart('/');
+         }
++
++        // Resource names arrive from the PC server and may contain Windows backslashes.
++        // Normalize them to Android path separators and reject rooted/traversal paths.
++        public static string NormalizeRelativePath(string relativePath)
++        {
++            if (string.IsNullOrWhiteSpace(relativePath))
++                throw new ArgumentException("Resource path is empty.", "relativePath");
++
++            string portable = relativePath.Replace('\\', '/');
++            if (portable.StartsWith("/", StringComparison.Ordinal) || Path.IsPathRooted(portable))
++                throw new ArgumentException("Rooted resource paths are not allowed.", "relativePath");
++
++            string[] parts = portable.Split('/');
++            for (int i = 0; i < parts.Length; i++)
++            {
++                if (parts[i].Length == 0 || parts[i] == "." || parts[i] == ".." ||
++                    parts[i].IndexOf(':') >= 0 || parts[i].IndexOf('\0') >= 0)
++                    throw new ArgumentException("Invalid resource path segment.", "relativePath");
++            }
++            return Path.Combine(parts);
++        }
++
++        public static string CombineUnder(string root, string relativePath)
++        {
++            string fullRoot = Path.GetFullPath(root);
++            string fullPath = Path.GetFullPath(Path.Combine(fullRoot, NormalizeRelativePath(relativePath)));
++            string prefix = fullRoot.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + Path.DirectorySeparatorChar;
++            if (!fullPath.StartsWith(prefix, StringComparison.Ordinal))
++                throw new ArgumentException("Resource path escapes its destination folder.", "relativePath");
++            return fullPath;
++        }
+     }
+ }
+--- a/RageCoop.Client/Networking/DownloadManager.cs
++++ b/RageCoop.Client/Networking/DownloadManager.cs
+@@ -15,15 +15,26 @@
+             {
+                 var fr = new Packets.FileTransferRequest();
+                 fr.Deserialize(data);
+-                if (fr.Name.EndsWith(".res"))
++                bool isResource = !string.IsNullOrEmpty(fr.Name) && fr.Name.EndsWith(".res", StringComparison.OrdinalIgnoreCase);
++                if (isResource)
++                    _resources.Add(fr.Name);
++
++                try
+                 {
+-                    _resources.Add(fr.Name);
++                    bool needsDownload = AddFile(fr.ID, fr.Name, fr.FileLength);
++                    return new Packets.FileTransferResponse()
++                    {
++                        ID = fr.ID,
++                        Response = needsDownload ? FileResponse.NeedToDownload : FileResponse.AlreadyExists
++                    };
+                 }
+-                return new Packets.FileTransferResponse()
++                catch (ArgumentException ex)
+                 {
+-                    ID = fr.ID,
+-                    Response = AddFile(fr.ID, fr.Name, fr.FileLength) ? FileResponse.NeedToDownload : FileResponse.AlreadyExists
+-                };
++                    if (isResource) _resources.Remove(fr.Name);
++                    Main.Logger.Error($"Rejected invalid resource path '{fr.Name}': {ex.Message}");
++                    // There is no InvalidPath response in the current PC protocol; reject this file as already present.
++                    return new Packets.FileTransferResponse() { ID = fr.ID, Response = FileResponse.AlreadyExists };
++                }
+             });
+             Networking.RequestHandlers.Add(PacketType.FileTransferComplete, (data) =>
+             {
+@@ -60,17 +71,16 @@
+         private static readonly HashSet<string> _resources = new HashSet<string>();
+         public static bool AddFile(int id, string name, long length)
+         {
+-            var path = $"{ResourceFolder}\\{name}";
++            var path = AndroidPaths.CombineUnder(ResourceFolder, name);
+             Main.Logger.Debug($"Downloading file to {path} , id:{id}");
+-            if (!Directory.Exists(Directory.GetParent(path).FullName))
+-            {
+-                Directory.CreateDirectory(Directory.GetParent(path).FullName);
+-            }
++            string parent = Path.GetDirectoryName(path);
++            if (!string.IsNullOrEmpty(parent))
++                Directory.CreateDirectory(parent);
+ 
+-            if (FileAlreadyExists(ResourceFolder, name, length))
++            if (FileAlreadyExists(path, length))
+             {
+                 Main.Logger.Debug($"File already exists! canceling download:{name}");
+-                DownloadCompleted?.Invoke(null, Path.Combine(ResourceFolder, name));
++                DownloadCompleted?.Invoke(null, AndroidPaths.CombineUnder(ResourceFolder, name));
+                 return false;
+             }
+             /*
+@@ -100,18 +110,14 @@
+         /// <param name="name"></param>
+         /// <param name="length"></param>
+         /// <returns></returns>
+-        private static bool FileAlreadyExists(string folder, string name, long length)
++        private static bool FileAlreadyExists(string filePath, long length)
+         {
+-            string filePath = $"{folder}\\{name}";
+-
+             if (File.Exists(filePath))
+             {
+                 if (new FileInfo(filePath).Length == length)
+-                {
+                     return true;
+-                }
+ 
+-                // Delete the file because the length is wrong (maybe the file was updated)
++                // Delete the file because its length is wrong (maybe it was updated).
+                 File.Delete(filePath);
+             }
+ 
+@@ -142,7 +148,7 @@
+                 InProgressDownloads.Remove(id);
+                 f.Dispose();
+                 Main.Logger.Info($"Download finished:{f.FileName}");
+-                DownloadCompleted?.Invoke(null, Path.Combine(ResourceFolder, f.FileName));
++                DownloadCompleted?.Invoke(null, AndroidPaths.CombineUnder(ResourceFolder, f.FileName));
+             }
+             else
+             {
+--- a/RageCoop.Client/Scripting/Resources.cs
++++ b/RageCoop.Client/Scripting/Resources.cs
+@@ -93,8 +93,8 @@
+             LoadedResources.Clear();
+             foreach (var zip in zips)
+             {
+-                var zipPath = Path.Combine(path, zip);
+-                Logger?.Info($"Loading resource: {Path.GetFileNameWithoutExtension(zip)}");
++                var zipPath = AndroidPaths.CombineUnder(path, zip);
++                Logger?.Info($"Loading resource: {Path.GetFileNameWithoutExtension(zipPath)}");
+                 LoadResource(new ZipFile(zipPath), Path.Combine(path, "data"));
+             }
+             StartAll();
+--- a/RageCoop.Client/Networking/Send.cs
++++ b/RageCoop.Client/Networking/Send.cs
+@@ -26,6 +26,35 @@
+             Peer.SendTo(p, Targets, channel, method);
+         }
+ 
++        private static Vehicle ResolveVehicleForPedSync(Ped ped, byte speed)
++        {
++            Vehicle vehicle = speed == 5 ? ped.VehicleTryingToEnter : ped.CurrentVehicle;
++            if (vehicle == null || !vehicle.Exists())
++                vehicle = ped.CurrentVehicle;
++            if ((vehicle == null || !vehicle.Exists()) && speed == 6)
++                vehicle = ped.LastVehicle;
++            if ((vehicle == null || !vehicle.Exists()) && speed == 5)
++                vehicle = ped.VehicleTryingToEnter;
++
++            if (vehicle != null && vehicle.Exists())
++                return vehicle;
++
++            // Some Android SHVDN builds can return null from the managed vehicle properties
++            // while the native ped state still has a valid vehicle handle. Resolve that handle
++            // directly before giving up on the vehicle sync frame.
++            int handle = 0;
++            if (speed == 5)
++                handle = Function.Call<int>((Hash)0x814FA8BE5449445D, ped.Handle); // GET_VEHICLE_PED_IS_TRYING_TO_ENTER
++            if (handle == 0)
++                handle = Function.Call<int>((Hash)0x9A9112A0FE9A4713, ped.Handle, speed == 6); // GET_VEHICLE_PED_IS_IN
++
++            if (handle == 0)
++                return null;
++
++            vehicle = Entity.FromHandle(handle) as Vehicle;
++            return vehicle != null && vehicle.Exists() ? vehicle : null;
++        }
++
+         public static void SendPed(SyncedPed sp, bool full)
+         {
+             if (sp.LastSentStopWatch.ElapsedMilliseconds < SyncInterval)
+@@ -40,6 +69,9 @@
+             p.Rotation = ped.ReadRotation();
+             p.Velocity = ped.ReadVelocity();
+             p.Speed = ped.GetPedSpeed();
++            // PedSync packet instances are reused; never carry a previous vehicle/seat into this frame.
++            p.VehicleID = 0;
++            p.Seat = 0;
+             p.Flags = ped.GetPedFlags();
+             p.Heading = ped.Heading;
+             if (p.Flags.HasPedFlag(PedDataFlags.IsAiming))
+@@ -57,21 +89,25 @@
+                 // Seat sync
+                 if (p.Speed >= 4)
+                 {
+-                    var veh = ped.CurrentVehicle?.GetSyncEntity() ?? ped.VehicleTryingToEnter?.GetSyncEntity() ?? ped.LastVehicle?.GetSyncEntity();
+-                    p.VehicleID = veh?.ID ?? 0;
+-                    if (p.VehicleID == 0) { Main.Logger.Error("Invalid vehicle"); }
+-                    if (p.Speed == 5)
++                    var vehicle = ResolveVehicleForPedSync(ped, p.Speed);
++                    var veh = vehicle?.GetSyncEntity();
++                    if (veh == null || veh.ID == 0)
+                     {
+-                        p.Seat = ped.GetSeatTryingToEnter();
++                        // Android can briefly report an enter/exit state without a valid vehicle handle.
++                        // Send this frame as on-foot instead of emitting an unresolvable VehicleID=0 state.
++                        p.VehicleID = 0;
++                        p.Seat = 0;
++                        p.Speed = 0;
+                     }
+                     else
+                     {
+-                        p.Seat = ped.SeatIndex;
+-                    }
+-                    if (!veh.IsLocal && p.Speed == 4 && p.Seat == VehicleSeat.Driver)
+-                    {
+-                        veh.OwnerID = Main.LocalPlayerID;
+-                        SyncEvents.TriggerChangeOwner(veh.ID, Main.LocalPlayerID);
++                        p.VehicleID = veh.ID;
++                        p.Seat = p.Speed == 5 ? ped.GetSeatTryingToEnter() : ped.SeatIndex;
++                        if (!veh.IsLocal && p.Speed == 4 && p.Seat == VehicleSeat.Driver)
++                        {
++                            veh.OwnerID = Main.LocalPlayerID;
++                            SyncEvents.TriggerChangeOwner(veh.ID, Main.LocalPlayerID);
++                        }
+                     }
+                 }
+                 p.Position = ped.ReadPosition();
+--- a/RageCoop.Client/Networking/Receive.cs
++++ b/RageCoop.Client/Networking/Receive.cs
+@@ -324,16 +324,23 @@
+             c.Heading = packet.Heading;
+             c.Position = packet.Position;
+             c.LastSyncedStopWatch.Restart();
++            c.VehicleID = 0;
++            c.Seat = 0;
+             if (c.IsRagdoll)
+             {
+                 c.HeadPosition = packet.HeadPosition;
+                 c.RightFootPosition = packet.RightFootPosition;
+                 c.LeftFootPosition = packet.LeftFootPosition;
+             }
+-            else if (c.Speed >= 4)
++            else if (c.Speed >= 4 && packet.VehicleID != 0)
+             {
+                 c.VehicleID = packet.VehicleID;
+                 c.Seat = packet.Seat;
++            }
++            else if (c.Speed >= 4)
++            {
++                // A vehicle state without a resolvable network ID cannot be applied safely.
++                c.Speed = 0;
+             }
+             c.LastSynced = Main.Ticked;
+             if (c.IsAiming)
