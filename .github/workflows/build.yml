@@ -166,7 +166,7 @@ jobs:
           $scriptText = Get-Content -LiteralPath $scriptPath -Raw
           $old = "foreach (`$arg in @('/nologo','/noconfig','/target:library','/unsafe+','/optimize+','/langversion:latest','/nostdlib+','/platform:anycpu','/out:' + `$clientOut)) {`r`n    `$compilerArgs.Add(`$arg)`r`n}"
           if (-not $scriptText.Contains($old)) {
-            $pattern = '(?s)foreach \(\$arg in @\('/nologo'.*?\)\) \{\s*\$compilerArgs\.Add\(\$arg\)\s*\}'
+            $pattern = "(?s)foreach \(`$arg in @\('/nologo'.*?\)\) \{\s*`$compilerArgs\.Add\(`$arg\)\s*\}"
             if ($scriptText -notmatch $pattern) { throw 'Could not find original compiler argument block.' }
             $replacement = @'
           $compilerArgs.Add('/nologo')
