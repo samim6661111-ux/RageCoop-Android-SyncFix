@@ -1,0 +1,83 @@
+name: Build RageCoop Android Sync Fix
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  build-client:
+    name: Compile Android-compatible Client DLL
+    runs-on: windows-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v7
+
+      - name: Set up .NET SDK (Roslyn compiler)
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Set up Python for source checks
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+
+      - name: Validate Android source patches
+        run: python tests/test_sync_fix_sources.py
+
+      - name: Compile RageCoop.Client.dll
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          ./build_windows.ps1
+
+      - name: Create flat install ZIP and checksum
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $dll = Join-Path $PWD 'install/games/gtav/scripts/RageCoop/RageCoop.Client.dll'
+          if (-not (Test-Path $dll)) {
+            throw "Build output not found: $dll"
+          }
+
+          $stage = Join-Path $env:RUNNER_TEMP 'ragecoop-flat-package'
+          if (Test-Path $stage) { Remove-Item $stage -Recurse -Force }
+          New-Item -ItemType Directory -Path $stage | Out-Null
+
+          Copy-Item $dll (Join-Path $stage 'RageCoop.Client.dll')
+          $hash = (Get-FileHash $dll -Algorithm SHA256).Hash.ToLowerInvariant()
+          Set-Content -Path (Join-Path $stage 'SHA256SUMS.txt') -Value "$hash  RageCoop.Client.dll" -Encoding utf8
+
+          @'
+          INSTALL:
+          1. Back up the existing Android file first.
+          2. Copy ONLY RageCoop.Client.dll to:
+             /storage/emulated/0/games/gtav/scripts/RageCoop/RageCoop.Client.dll
+          3. Keep RageCoop.Core.dll, the APK, libgtavbridge.so, libmonohost.so,
+             GtavHost.dll and the existing Mono runtime unchanged.
+          4. If the game fails to load, restore the backup DLL and keep the build log.
+
+          This package contains the compiled Client DLL only. It is not proof of
+          successful multiplayer sync; test with two clients and inspect logs.
+          '@ | Set-Content -Path (Join-Path $stage 'INSTALL.txt') -Encoding utf8
+
+          $zip = Join-Path $PWD 'RageCoop-Android-SyncFix-ClientDLL.zip'
+          if (Test-Path $zip) { Remove-Item $zip -Force }
+          Compress-Archive -Path (Join-Path $stage '*') -DestinationPath $zip -CompressionLevel Optimal
+
+      - name: Upload build outputs
+        uses: actions/upload-artifact@v7
+        with:
+          name: RageCoop-Android-SyncFix
+          if-no-files-found: error
+          path: |
+            install/games/gtav/scripts/RageCoop/RageCoop.Client.dll
+            RageCoop-Android-SyncFix-ClientDLL.zip
+            build_logs/RageCoop.Client.log
