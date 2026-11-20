@@ -66,6 +66,41 @@ jobs:
       - name: Validate Android source patches
         run: python tests/test_sync_fix_sources.py
 
+      # Work around PowerShell array-expression parsing in the original build script:
+      # build the Roslyn /out: argument as a standalone string, rather than inside
+      # the comma-separated array expression (which can leave /out: without a value).
+      - name: Fix Roslyn output argument in build script
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $scriptPath = Join-Path $PWD 'build_windows.ps1'
+          if (-not (Test-Path -LiteralPath $scriptPath)) {
+            throw "Build script not found: $scriptPath"
+          }
+          $scriptText = Get-Content -LiteralPath $scriptPath -Raw
+          $pattern = @'
+          (?s)foreach \(\$arg in @\('/nologo'.*?\)\) \{\s*\$compilerArgs\.Add\(\$arg\)\s*\}
+          '@
+          $replacement = @'
+          $compilerArgs.Add('/nologo')
+          $compilerArgs.Add('/noconfig')
+          $compilerArgs.Add('/target:library')
+          $compilerArgs.Add('/unsafe+')
+          $compilerArgs.Add('/optimize+')
+          $compilerArgs.Add('/langversion:latest')
+          $compilerArgs.Add('/nostdlib+')
+          $compilerArgs.Add('/platform:anycpu')
+          $outArg = [System.String]::Concat('/out:', $clientOut)
+          if ([string]::IsNullOrWhiteSpace($clientOut)) { throw 'Client output path is empty.' }
+          $compilerArgs.Add($outArg)
+          '@
+          $fixedText = [regex]::Replace($scriptText, $pattern, $replacement, 1)
+          if ($fixedText -ceq $scriptText) {
+            throw 'Could not locate the expected compiler argument block in build_windows.ps1; no changes were made.'
+          }
+          Set-Content -LiteralPath $scriptPath -Value $fixedText -Encoding utf8
+          Write-Host 'Patched Roslyn compiler argument construction.'
+
       - name: Compile RageCoop.Client.dll
         shell: pwsh
         run: ./build_windows.ps1
@@ -90,6 +125,14 @@ jobs:
           Successful compilation does not prove multiplayer sync; test with two clients.
           '@ | Set-Content -Path (Join-Path $stage 'INSTALL.txt') -Encoding utf8
           Compress-Archive -Path (Join-Path $stage '*') -DestinationPath (Join-Path $PWD 'RageCoop-Android-SyncFix-ClientDLL.zip') -Force
+
+      - name: Upload compiler log for debugging
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: RageCoop-Android-SyncFix-Build-Logs
+          if-no-files-found: ignore
+          path: build_logs/RageCoop.Client.log
 
       - name: Upload build outputs
         uses: actions/upload-artifact@v7
